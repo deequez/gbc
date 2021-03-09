@@ -9,14 +9,56 @@ D: DELETE
 */
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
+const maxSize = 1 << 20 //1MB
+
 func main() {
+	getIPTimeout(maxSize)
+}
+
+/*
+HTTP Request:
+POST /post/HTTP/1.1
+Host: httpbin.org
+Connection: Close
+
+{"name": "joe"}
+*/
+
+func getIPTimeout(timeout time.Duration) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://httpbin.org/get", nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var reply struct {
+		IP string `json:"origin"`
+	}
+	dec := json.NewDecoder(io.LimitReader(resp.Body, maxSize))
+	if err := dec.Decode(&reply); err != nil {
+		return "", err
+	}
+	return reply.IP, nil
+}
+
+func getIP() {
 	resp, err := http.Get("https://httpbin.org/get")
 	if err != nil {
 		log.Fatalf("error: %s", err)
