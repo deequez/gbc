@@ -6,6 +6,23 @@ import (
 
 func main() {
 	fmt.Println(linespace(1, 5, 5)) // [1 2 3 4 5]
+
+	v := []float64{1, 2, 3}
+	fmt.Println("dot:", dot(v, v))
+}
+
+func dot(v1, v2 []float64) float64 {
+	total := 0.0
+	// for i := 0; i < len(v1); i++ {
+	// 	total += v1[i] * v2[i]
+	// }
+	// for i := range v1 {
+	// 	total += v1[i] * v2[i]
+	// }
+	for i, v := range v1 {
+		total += v * v2[i]
+	}
+	return total
 }
 
 func linespace(start, stop float64, count int) []float64 {
